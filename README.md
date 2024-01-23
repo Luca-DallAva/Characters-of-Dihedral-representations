@@ -1,0 +1,1 @@
+Given a dihedral weight 1 modular form g and a quadratic (CM) field K, it outputs a couple of Hecke characters over K such that the Galois representation of g is isomorphic to the induction of any of the two characters.
