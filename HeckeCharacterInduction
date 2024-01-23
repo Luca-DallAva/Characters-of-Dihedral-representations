@@ -133,18 +133,19 @@ end function;
 //the analytic ranks computed up to the d-th derivative
 
 
-AnalyticRank_E_K_psi:=function(E,K,g:Derivative:=0,Sign)
+AnalyticRank_E_K_psi:=function(E,K,g:Derivative:=0)
 
 CHARS:=HeckeCharacterInduction(g,K);
 RES:=[* *];
 for i in [1..#CHARS] do
 	
 	psi:=CHARS[i][1][1]/CHARS[i][1][2];
+	psi:=AssociatedPrimitiveCharacter(psi);
 	L_chi:=LSeries(psi);
 
-	LEKch:=TensorProduct(LSeries(E,K), L_chi : Sign:=Sign);
+	LEKch:=TensorProduct(LSeries(E,K), L_chi);
 
-	res:=[];
+	res:=[**];
 	
 	for j in [0..Derivative] do
 		res:=Append(res, Evaluate(LEKch,1:Derivative:=j));
@@ -156,7 +157,7 @@ return RES;
 end function;
 
 
-//// EXAMPLE
+//// EXAMPLE 1
 /*
 
 R<x>:=PolynomialRing(Integers());
@@ -176,6 +177,36 @@ E:=EllipticCurve(E_eq);
 
 HeckeCharacterInduction(g,K);
 
-AnalyticRank_E_K_psi_g(E,K,g:Derivative:=1, Sign:=1);
+AnalyticRank_E_K_psi(E,K,g:Derivative:=1);
+
+*/
+
+
+//// EXAMPLE 2
+/*
+
+R<x>:=PolynomialRing(Integers());
+pol:=x^2-x+1;
+K:=NumberField(pol);
+M:=ModularForms(Gamma1(525),1);
+MD:=DihedralForms(M);
+C:=[* *];
+for V in MD do 		
+	if Conductor(V[1]) eq 105 then
+		C:=Append(C,V);
+	end if;
+end for;
+
+
+E_eq:=x^3-142587*x-38910186;    //cond 15, 15.a3
+E:=EllipticCurve(E_eq);   
+
+for cc in C do
+	Order(cc[1]);
+	g:=cc[2][1];
+
+	AnalyticRank_E_K_psi(E,K,g:Derivative:=1);
+
+end for;
 
 */
