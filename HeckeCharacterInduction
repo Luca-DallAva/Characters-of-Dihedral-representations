@@ -11,12 +11,15 @@ Norms_Vector:=function(decomposition);
 	n:=#decomposition;
 
 	V:=[];
-
+	dec_index:=2;
 	for i in [1..n] do
 		V := Append(V,Norm(decomposition[i][1]));
+		if decomposition[i][2] eq 1 then
+			dec_index:=1;
+		end if;
 	end for;
 
-	return V;
+	return V, dec_index;
 
 end function;
 
@@ -45,16 +48,18 @@ end for;
 return list;
 end function;
 
+
 // Routine for finding the associated character.
 //Sloppy bound! FIX!
+// dec_index := 1 or 2. It has to be fixed to 1 if the decomposition of cond_norm*OK contains split primes 2 otherwise. In fact, in the first case, the conjugate Hecke character has different conductor.
 
-FindPsiCouple:=function(g,I,OK : grp:=Elements(HeckeCharacterGroup(I)), N:=0, bound:=Level(g) )
+FindPsiCouple:=function(g,I,OK,dec_index: grp:=Elements(HeckeCharacterGroup(I)), N:=0, bound:=Level(g) )
  	
  	G:=grp;
  	index:=0;
 	for psi in G do
 		index:=index+1;
-		if (#G eq 1) then
+		if (#G eq dec_index) then
 			return G;
 			break;
 		end if;
@@ -84,7 +89,7 @@ FindPsiCouple:=function(g,I,OK : grp:=Elements(HeckeCharacterGroup(I)), N:=0, bo
 			end if;
 		end while;
 	end for;
-	if #G eq 1 then
+	if #G eq dec_index then
 		return G;
 	else   // If we are not done, we increase the bound ad start with the given G + given N.
 		return $$(g,I,OK : grp:=G, N:=n-1, bound:=p^2); 
@@ -94,7 +99,7 @@ end function;
 // Main
 // 
 
-HeckeCharacterInduction:=function(g,K);
+HeckeCharacterInduction:=function(g,K:O:=MaximalOrder(K));
 
 N:=Level(g);
 
@@ -105,23 +110,22 @@ cond_norm:=N/d;
 cond_norm:=Integers()!cond_norm;
 divisors:=Factorisation(cond_norm);
 
-OK:=MaximalOrder(K);
-fact:=Factorisation(cond_norm*OK);
+fact:=Factorisation(cond_norm*O);
 
-FACT:=Norms_Vector(fact);
+FACT,dec_index:=Norms_Vector(fact);
 
 FACT_indexes:=IndexesProduct(FACT,Abs(cond_norm));
 	
 JJ:=[* *];
 
 for index in FACT_indexes do
-	I:=1*OK;
+	I:=1*O;
 	for i in [1..#index] do
 		J:=fact[index[i]][1];
 		I:=I*J;
 	end for;
 
-	JJ:=Append(JJ, [* FindPsiCouple(g,I,OK), I *]);
+	JJ:=Append(JJ, [* FindPsiCouple(g,I,O,dec_index), I *]);
 	
 end for;
 
@@ -135,11 +139,13 @@ end function;
 
 AnalyticRank_E_K_psi:=function(E,K,g:Derivative:=0)
 
-CHARS:=HeckeCharacterInduction(g,K);
+OK:=MaximalOrder(K);
+
+CHARS:=HeckeCharacterInduction(g,K:O:=OK);
 RES:=[* *];
-for i in [1..#CHARS] do
-	
-	psi:=CHARS[i][1][1]/CHARS[i][1][2];
+
+if #CHARS eq 1 then
+	psi:=CHARS[1][1][1]/CHARS[1][1][2];
 	psi:=AssociatedPrimitiveCharacter(psi);
 	L_chi:=LSeries(psi);
 
@@ -151,7 +157,29 @@ for i in [1..#CHARS] do
 		res:=Append(res, Evaluate(LEKch,1:Derivative:=j));
 	end for;
 	RES:=Append(RES,[*psi, res*]);
-end for;
+else
+	cond_norm:=Norm(CHARS[1][2]);
+	for i in [1..#CHARS] do
+		for j in [1..#CHARS] do
+			if CHARS[i][2]*CHARS[j][2] eq cond_norm*OK then
+				psi:=CHARS[i][1][1]/CHARS[j][1][1];
+				psi:=AssociatedPrimitiveCharacter(psi);
+				L_chi:=LSeries(psi);
+
+				LEKch:=TensorProduct(LSeries(E,K), L_chi);
+
+				res:=[**];
+				
+				for j in [0..Derivative] do
+					res:=Append(res, Evaluate(LEKch,1:Derivative:=j));
+				end for;
+				RES:=Append(RES,[*psi, res*]);
+			end if;
+		end for;
+	end for;
+
+end if;
+
 return RES;
 
 end function;
