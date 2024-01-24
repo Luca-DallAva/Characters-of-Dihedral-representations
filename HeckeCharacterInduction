@@ -54,7 +54,7 @@ FindPsiCouple:=function(g,I,OK : grp:=Elements(HeckeCharacterGroup(I)), N:=0, bo
  	index:=0;
 	for psi in G do
 		index:=index+1;
-		if (#G eq 2) then
+		if (#G eq 1) then
 			return G;
 			break;
 		end if;
@@ -84,7 +84,7 @@ FindPsiCouple:=function(g,I,OK : grp:=Elements(HeckeCharacterGroup(I)), N:=0, bo
 			end if;
 		end while;
 	end for;
-	if #G eq 2 then
+	if #G eq 1 then
 		return G;
 	else   // If we are not done, we increase the bound ad start with the given G + given N.
 		return $$(g,I,OK : grp:=G, N:=n-1, bound:=p^2); 
