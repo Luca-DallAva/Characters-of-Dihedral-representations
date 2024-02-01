@@ -4,8 +4,8 @@ authors:
 - family-names: "Dall'Ava"
   given-names: "Luca"
   orcid: "https://orcid.org/0000-0003-3639-8500"
-- family-names: "Aleksander"
-  given-names: "Horawa"
+- family-names: "Horawa"
+  given-names: "Aleksander"
   orcid: "https://orcid.org/0000-0002-1289-1336"
 title: "Characters-of-Dihedral-representations"
 version: 1.0.0
